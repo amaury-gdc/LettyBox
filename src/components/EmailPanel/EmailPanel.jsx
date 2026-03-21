@@ -3,8 +3,18 @@ import DigestBlock from '../DigestBlock/DigestBlock.jsx'
 import EmailItem from '../EmailItem/EmailItem.jsx'
 import styles from './EmailPanel.module.css'
 
-export default function EmailPanel() {
+export default function EmailPanel({ isOpen, onClose, onOpen }) {
   const { emails, digest, isLoading } = useEmailStore()
+
+  if (!isOpen) {
+    return (
+      <section className={`${styles.panel} ${styles.collapsed}`} onClick={onOpen}>
+        <div className={styles.collapsedStrip}>
+          <span className={styles.collapsedLabel}>Boîte de réception</span>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className={styles.panel}>
@@ -17,6 +27,9 @@ export default function EmailPanel() {
         </h2>
         <div className={styles.headerMeta}>
           <span className={styles.columnLabel}>emails</span>
+          <button className={styles.closeBtn} onClick={onClose} title="Fermer">
+            <CloseIcon />
+          </button>
         </div>
       </div>
 
@@ -43,5 +56,14 @@ export default function EmailPanel() {
         </div>
       </div>
     </section>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
   )
 }

@@ -60,6 +60,57 @@
   letter-spacing: 0.08em;
 }
 
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: color var(--transition), background var(--transition);
+}
+
+.closeBtn:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+/* ===== Collapsed strip ===== */
+.collapsed {
+  width: 40px;
+  min-width: 40px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition);
+}
+
+.collapsed:hover {
+  background: var(--surface-2);
+}
+
+.collapsedStrip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.collapsedLabel {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  user-select: none;
+}
+
 .body {
   flex: 1;
   overflow-y: auto;
