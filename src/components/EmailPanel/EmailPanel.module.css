@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: var(--surface);
   border-right: 1px solid var(--border);
   overflow: hidden;
 }
@@ -10,23 +11,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px 14px;
+  padding: 8px 16px;
   flex-shrink: 0;
   border-bottom: 1px solid var(--border);
+  height: 48px;
 }
 
 .heading {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .headingText {
   font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 400;
+  font-size: 1rem;
+  font-weight: 500;
   color: var(--text);
-  letter-spacing: -0.01em;
 }
 
 .count {
@@ -36,13 +37,12 @@
   min-width: 20px;
   height: 20px;
   padding: 0 6px;
-  background: var(--accent-dim);
-  border: 1px solid var(--accent);
+  background: var(--surface-2);
   border-radius: 99px;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
   font-weight: 500;
-  color: var(--accent);
+  color: var(--text-muted);
   line-height: 1;
 }
 
@@ -53,30 +53,27 @@
 }
 
 .columnLabel {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   color: var(--text-faint);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 
 .closeBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   background: none;
   border: none;
   color: var(--text-faint);
   cursor: pointer;
-  border-radius: var(--radius);
-  transition: color var(--transition), background var(--transition);
+  border-radius: 50%;
+  transition: background var(--transition);
 }
 
 .closeBtn:hover {
-  color: var(--text);
   background: var(--surface-2);
+  color: var(--text);
 }
 
 /* ===== Collapsed strip ===== */
@@ -101,11 +98,10 @@
 }
 
 .collapsedLabel {
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   user-select: none;
@@ -114,12 +110,14 @@
 .body {
   flex: 1;
   overflow-y: auto;
-  padding: 0;
+  background: var(--surface-2);
 }
 
 .emailList {
   display: flex;
   flex-direction: column;
+  padding: 8px;
+  gap: 4px;
 }
 
 .emptyState {
@@ -128,12 +126,12 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 48px 24px;
+  padding: 64px 24px;
   text-align: center;
 }
 
 .emptyText {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--text-muted);
 }
 

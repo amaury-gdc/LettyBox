@@ -5,31 +5,28 @@ import ClientPanel from './components/ClientPanel/ClientPanel.jsx'
 import styles from './App.module.css'
 
 export default function App() {
-  const [emailOpen, setEmailOpen] = useState(true)
-  const [clientOpen, setClientOpen] = useState(true)
-
-  const gridCols = emailOpen && clientOpen
-    ? '1fr 1fr'
-    : !emailOpen && clientOpen
-      ? '40px 1fr'
-      : emailOpen && !clientOpen
-        ? '1fr 40px'
-        : '1fr 1fr'
+  const [activeTab, setActiveTab] = useState('inbox')
 
   return (
     <div className={styles.app}>
       <Header />
-      <main className={styles.main} style={{ gridTemplateColumns: gridCols }}>
-        <EmailPanel
-          isOpen={emailOpen}
-          onClose={() => setEmailOpen(false)}
-          onOpen={() => setEmailOpen(true)}
-        />
-        <ClientPanel
-          isOpen={clientOpen}
-          onClose={() => setClientOpen(false)}
-          onOpen={() => setClientOpen(true)}
-        />
+      <div className={styles.tabs}>
+        <button
+          className={`${styles.tab} ${activeTab === 'inbox' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('inbox')}
+        >
+          Boîte de réception
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'clients' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('clients')}
+        >
+          Clients
+        </button>
+      </div>
+      <main className={styles.main}>
+        {activeTab === 'inbox' && <EmailPanel />}
+        {activeTab === 'clients' && <ClientPanel />}
       </main>
     </div>
   )

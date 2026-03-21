@@ -1,34 +1,47 @@
-/* ===== CSS Variables — Design System ===== */
+/* ===== CSS Variables — ARIRANG Design System ===== */
+/* Inspiré de l'album BTS ARIRANG (2026) — monochrome chaud + rouge profond */
 :root {
-  --bg: #0e0e11;
-  --surface: #16161a;
-  --surface-2: #1e1e24;
-  --surface-3: #252530;
-  --border: #2a2a35;
-  --border-hover: #3a3a48;
-  --accent: #c8f064;
-  --accent-dim: rgba(200, 240, 100, 0.12);
-  --accent-hover: #d4f57a;
-  --text: #e8e8f0;
-  --text-muted: #8888a0;
-  --text-faint: #55556a;
-  --urgent: #ff6b6b;
-  --urgent-dim: rgba(255, 107, 107, 0.12);
-  --success: #6bf0a8;
-  --warning: #f0c96b;
+  /* Fonds — ivoire chaud, papier photobook */
+  --bg: #f4f1ec;
+  --surface: #ffffff;
+  --surface-2: #ece8e2;
+  --surface-3: #e2ddd6;
 
-  --font-display: 'DM Serif Display', serif;
-  --font-ui: 'Syne', sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  /* Bordures — gris chauds */
+  --border: #d5d0c9;
+  --border-hover: #b8b2ab;
 
-  --radius-sm: 4px;
-  --radius: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  /* Accent — "Group Red" Arirang */
+  --accent: #9b2335;
+  --accent-dim: rgba(155, 35, 53, 0.09);
+  --accent-hover: #7f1c2b;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  /* Texte — noir chaud */
+  --text: #1c1a17;
+  --text-muted: #5a5652;
+  --text-faint: #9a9691;
+
+  /* Urgence */
+  --urgent: #c0392b;
+  --urgent-dim: rgba(192, 57, 43, 0.09);
+
+  /* Statuts */
+  --success: #2e7d45;
+  --warning: #a0620a;
+
+  /* Typographie — Playfair pour les titres (serif classique), Roboto pour l'UI */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-ui: 'Roboto', system-ui, sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+
+  --radius-sm: 3px;
+  --radius: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 20px;
+
+  --shadow-sm: 0 1px 3px rgba(28, 26, 23, 0.1), 0 1px 2px rgba(28, 26, 23, 0.08);
+  --shadow: 0 2px 8px rgba(28, 26, 23, 0.12), 0 1px 3px rgba(28, 26, 23, 0.08);
+  --shadow-lg: 0 4px 16px rgba(28, 26, 23, 0.14), 0 2px 6px rgba(28, 26, 23, 0.1);
 
   --transition: 150ms ease;
   --transition-slow: 300ms ease;
@@ -63,25 +76,14 @@ body {
   flex-direction: column;
 }
 
-/* ===== Typography helpers ===== */
-.font-display { font-family: var(--font-display); }
-.font-mono { font-family: var(--font-mono); }
-
 /* ===== Scrollbar ===== */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 2px;
-}
-::-webkit-scrollbar-thumb:hover {
   background: var(--border-hover);
+  border-radius: 3px;
 }
+::-webkit-scrollbar-thumb:hover { background: #9a9490; }
 
 /* ===== Focus ===== */
 :focus-visible {
@@ -98,12 +100,10 @@ body {
 /* ===== Utilities ===== */
 .sr-only {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip: rect(0,0,0,0);
   white-space: nowrap;
   border: 0;
 }

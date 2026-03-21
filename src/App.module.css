@@ -5,17 +5,55 @@
   overflow: hidden;
 }
 
+/* ===== Barre d'onglets ===== */
+.tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  padding: 0 24px;
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  flex-shrink: 0;
+}
+
+.tab {
+  padding: 11px 22px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 400;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: color var(--transition), border-color var(--transition);
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tabActive {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ===== Contenu ===== */
 .main {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
   flex: 1;
   overflow: hidden;
-  border-top: 1px solid var(--border);
 }
 
 @media (max-width: 768px) {
-  .main {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
+  .tabs {
+    padding: 0 12px;
+  }
+  .tab {
+    padding: 10px 14px;
+    font-size: 0.8rem;
   }
 }

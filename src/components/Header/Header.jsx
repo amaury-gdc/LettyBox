@@ -1,3 +1,4 @@
+import { useGoogleLogin } from '@react-oauth/google'
 import { useEmailStore } from '../../store/emailStore.js'
 import styles from './Header.module.css'
 
@@ -6,11 +7,31 @@ export default function Header() {
   const urgentCount = emails.filter((e) => e.isUrgent).length
   const unreadCount = emails.filter((e) => !e.isRead).length
 
+  const login = useGoogleLogin({
+    scope: 'https://www.googleapis.com/auth/gmail.readonly',
+    onSuccess: (response) => useEmailStore.getState().setAuthenticated(response.access_token),
+    onError: (err) => console.error('OAuth error:', err),
+  })
+
   return (
     <header className={styles.header}>
       <div className={styles.brand}>
         <span className={styles.logo}>✦</span>
         <h1 className={styles.title}>LettyBox</h1>
+      </div>
+
+      <div className={styles.searchBar}>
+        <div className={styles.searchWrapper}>
+          <svg className={styles.searchIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder="Rechercher dans les emails"
+          />
+        </div>
       </div>
 
       <div className={styles.stats}>
@@ -47,7 +68,7 @@ export default function Header() {
             Déconnexion
           </button>
         ) : (
-          <button className={`${styles.authBtn} ${styles.authBtnPrimary}`}>
+          <button className={`${styles.authBtn} ${styles.authBtnPrimary}`} onClick={() => login()}>
             Connecter Gmail
           </button>
         )}

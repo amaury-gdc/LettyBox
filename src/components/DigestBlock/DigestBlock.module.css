@@ -1,10 +1,11 @@
+/* DigestBlock — teinte ivoire-rouge, ARIRANG */
 .block {
-  margin: 16px;
-  padding: 16px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  margin: 12px 16px;
+  padding: 14px 16px;
+  background: #fdf6f0;
+  border: 1px solid #e8d5cc;
   border-left: 3px solid var(--accent);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -23,41 +24,40 @@
 }
 
 .icon {
-  font-size: 0.6rem;
-  color: var(--accent);
+  font-size: 0.8rem;
   line-height: 1;
+  color: var(--accent);
 }
 
 .title {
-  font-family: var(--font-mono);
   font-size: 0.7rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
 .time {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: var(--text-faint);
 }
 
 .summary {
-  font-size: 0.875rem;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
   color: var(--text);
-  line-height: 1.6;
+  line-height: 1.65;
   font-weight: 400;
 }
 
 .urgentBanner {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   padding: 7px 10px;
   background: var(--urgent-dim);
-  border: 1px solid var(--urgent);
-  border-radius: var(--radius);
+  border: 1px solid rgba(192, 57, 43, 0.25);
+  border-radius: var(--radius-sm);
 }
 
 .urgentDot {
@@ -70,12 +70,12 @@
 }
 
 .urgentText {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--urgent);
   font-weight: 500;
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50% { opacity: 0.4; }
 }

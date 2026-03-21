@@ -17,7 +17,7 @@ const PRIORITY_OPTIONS = [
   { value: 'low', label: 'Basse' },
 ]
 
-export default function ClientPanel({ isOpen, onClose, onOpen }) {
+export default function ClientPanel() {
   const {
     filterStatus,
     filterPriority,
@@ -33,16 +33,6 @@ export default function ClientPanel({ isOpen, onClose, onOpen }) {
 
   const [showCreateForm, setShowCreateForm] = useState(false)
   const clients = getFilteredClients()
-
-  if (!isOpen) {
-    return (
-      <section className={`${styles.panel} ${styles.collapsed}`} onClick={onOpen}>
-        <div className={styles.collapsedStrip}>
-          <span className={styles.collapsedLabel}>Clients</span>
-        </div>
-      </section>
-    )
-  }
 
   function handleCreateClient(e) {
     e.preventDefault()
@@ -62,29 +52,6 @@ export default function ClientPanel({ isOpen, onClose, onOpen }) {
 
   return (
     <section className={styles.panel}>
-      <div className={styles.header}>
-        <h2 className={styles.heading}>
-          <span className={styles.headingText}>Clients</span>
-          {clients.length > 0 && (
-            <span className={styles.count}>{clients.length}</span>
-          )}
-        </h2>
-        <div className={styles.headerMeta}>
-          <span className={styles.columnLabel}>crm</span>
-          <button className={styles.closeBtn} onClick={onClose} title="Fermer">
-            <CloseIcon />
-          </button>
-          <button
-            className={styles.newBtn}
-            onClick={() => setShowCreateForm(true)}
-            title="Nouveau client"
-          >
-            <PlusIcon />
-            <span>Nouveau</span>
-          </button>
-        </div>
-      </div>
-
       <div className={styles.toolbar}>
         <div className={styles.searchWrapper}>
           <SearchIcon />
@@ -96,34 +63,25 @@ export default function ClientPanel({ isOpen, onClose, onOpen }) {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           {searchQuery && (
-            <button
-              className={styles.clearSearch}
-              onClick={() => setSearchQuery('')}
-            >
-              ×
-            </button>
+            <button className={styles.clearSearch} onClick={() => setSearchQuery('')}>×</button>
           )}
         </div>
 
         <div className={styles.filters}>
-          <select
-            className={styles.filterSelect}
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
+          <select className={styles.filterSelect} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
             {STATUS_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
-          <select
-            className={styles.filterSelect}
-            value={filterPriority}
-            onChange={(e) => setFilterPriority(e.target.value)}
-          >
+          <select className={styles.filterSelect} value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
             {PRIORITY_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
+          <button className={styles.newBtn} onClick={() => setShowCreateForm(true)}>
+            <PlusIcon />
+            <span>Nouveau</span>
+          </button>
         </div>
       </div>
 
@@ -151,9 +109,7 @@ export default function ClientPanel({ isOpen, onClose, onOpen }) {
                 key={client.id}
                 client={client}
                 isSelected={client.id === selectedClientId}
-                onSelect={() =>
-                  setSelectedClient(client.id === selectedClientId ? null : client.id)
-                }
+                onSelect={() => setSelectedClient(client.id === selectedClientId ? null : client.id)}
               />
             ))
           )}
@@ -215,15 +171,6 @@ function CreateClientForm({ onSubmit, onCancel }) {
         <button type="submit" className={styles.submitBtn}>Créer la fiche</button>
       </div>
     </form>
-  )
-}
-
-function CloseIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
   )
 }
 
