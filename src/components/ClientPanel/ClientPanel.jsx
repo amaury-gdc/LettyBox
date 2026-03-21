@@ -17,7 +17,7 @@ const PRIORITY_OPTIONS = [
   { value: 'low', label: 'Basse' },
 ]
 
-export default function ClientPanel() {
+export default function ClientPanel({ isOpen, onClose, onOpen }) {
   const {
     filterStatus,
     filterPriority,
@@ -33,6 +33,16 @@ export default function ClientPanel() {
 
   const [showCreateForm, setShowCreateForm] = useState(false)
   const clients = getFilteredClients()
+
+  if (!isOpen) {
+    return (
+      <section className={`${styles.panel} ${styles.collapsed}`} onClick={onOpen}>
+        <div className={styles.collapsedStrip}>
+          <span className={styles.collapsedLabel}>Clients</span>
+        </div>
+      </section>
+    )
+  }
 
   function handleCreateClient(e) {
     e.preventDefault()
@@ -61,6 +71,9 @@ export default function ClientPanel() {
         </h2>
         <div className={styles.headerMeta}>
           <span className={styles.columnLabel}>crm</span>
+          <button className={styles.closeBtn} onClick={onClose} title="Fermer">
+            <CloseIcon />
+          </button>
           <button
             className={styles.newBtn}
             onClick={() => setShowCreateForm(true)}
@@ -202,6 +215,15 @@ function CreateClientForm({ onSubmit, onCancel }) {
         <button type="submit" className={styles.submitBtn}>Créer la fiche</button>
       </div>
     </form>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
   )
 }
 
