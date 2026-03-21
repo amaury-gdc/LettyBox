@@ -19,19 +19,15 @@ const PRIORITY_OPTIONS = [
 
 export default function ClientPanel() {
   const {
-    filterStatus,
-    filterPriority,
-    searchQuery,
-    selectedClientId,
-    setFilterStatus,
-    setFilterPriority,
-    setSearchQuery,
-    setSelectedClient,
-    getFilteredClients,
-    createClient,
+    filterStatus, filterPriority, filterGroup, searchQuery,
+    selectedClientId, groups,
+    setFilterStatus, setFilterPriority, setFilterGroup, setSearchQuery,
+    setSelectedClient, getFilteredClients, createClient, createGroup, deleteGroup,
   } = useClientStore()
 
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [newGroupName, setNewGroupName] = useState('')
+  const [showGroupInput, setShowGroupInput] = useState(false)
   const clients = getFilteredClients()
 
   function handleCreateClient(e) {
@@ -50,38 +46,100 @@ export default function ClientPanel() {
     setShowCreateForm(false)
   }
 
+  function handleCreateGroup(e) {
+    e.preventDefault()
+    const name = newGroupName.trim()
+    if (!name) return
+    createGroup(name)
+    setNewGroupName('')
+    setShowGroupInput(false)
+  }
+
   return (
     <section className={styles.panel}>
       <div className={styles.toolbar}>
-        <div className={styles.searchWrapper}>
-          <SearchIcon />
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Rechercher…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <button className={styles.clearSearch} onClick={() => setSearchQuery('')}>×</button>
-          )}
+        <div className={styles.searchRow}>
+          <div className={styles.searchWrapper}>
+            <SearchIcon />
+            <input
+              type="text"
+              className={styles.searchInput}
+              placeholder="Rechercher…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button className={styles.clearSearch} onClick={() => setSearchQuery('')}>×</button>
+            )}
+          </div>
+          <div className={styles.filterSelects}>
+            <select className={styles.filterSelect} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+              {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+            <select className={styles.filterSelect} value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
+              {PRIORITY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+            <button className={styles.newBtn} onClick={() => setShowCreateForm(true)}>
+              <PlusIcon />
+              <span>Nouveau</span>
+            </button>
+          </div>
         </div>
 
-        <div className={styles.filters}>
-          <select className={styles.filterSelect} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-            {STATUS_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-          <select className={styles.filterSelect} value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
-            {PRIORITY_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-          <button className={styles.newBtn} onClick={() => setShowCreateForm(true)}>
-            <PlusIcon />
-            <span>Nouveau</span>
+        {/* Group filter chips */}
+        <div className={styles.groupFilters}>
+          <button
+            className={`${styles.groupChip} ${filterGroup === 'all' ? styles.groupChipActive : ''}`}
+            onClick={() => setFilterGroup('all')}
+          >
+            Tous
           </button>
+          <button
+            className={`${styles.groupChip} ${styles.groupChipFav} ${filterGroup === 'favorites' ? styles.groupChipActive : ''}`}
+            onClick={() => setFilterGroup(filterGroup === 'favorites' ? 'all' : 'favorites')}
+          >
+            ★ Favoris
+          </button>
+          {groups.map((g) => (
+            <span key={g.id} className={styles.groupChipWrapper}>
+              <button
+                className={`${styles.groupChip} ${filterGroup === g.id ? styles.groupChipActive : ''}`}
+                style={filterGroup === g.id
+                  ? { background: g.color.bg, color: g.color.text, borderColor: g.color.text }
+                  : { borderColor: g.color.text, color: g.color.text }
+                }
+                onClick={() => setFilterGroup(filterGroup === g.id ? 'all' : g.id)}
+              >
+                {g.name}
+              </button>
+              <button
+                className={styles.deleteGroupBtn}
+                onClick={() => { if (confirm(`Supprimer le groupe "${g.name}" ?`)) { deleteGroup(g.id); if (filterGroup === g.id) setFilterGroup('all') } }}
+                title="Supprimer ce groupe"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+
+          {showGroupInput ? (
+            <form className={styles.groupInputForm} onSubmit={handleCreateGroup}>
+              <input
+                className={styles.groupInput}
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+                placeholder="Nom du groupe"
+                autoFocus
+                onBlur={() => { if (!newGroupName.trim()) setShowGroupInput(false) }}
+              />
+              <button type="submit" className={styles.groupInputConfirm} disabled={!newGroupName.trim()}>✓</button>
+              <button type="button" className={styles.groupInputCancel} onClick={() => { setShowGroupInput(false); setNewGroupName('') }}>×</button>
+            </form>
+          ) : (
+            <button className={styles.addGroupChip} onClick={() => setShowGroupInput(true)}>
+              + Groupe
+            </button>
+          )}
         </div>
       </div>
 
@@ -97,7 +155,7 @@ export default function ClientPanel() {
           {clients.length === 0 ? (
             <div className={styles.emptyState}>
               <p className={styles.emptyText}>Aucun client trouvé</p>
-              {searchQuery || filterStatus !== 'all' || filterPriority !== 'all' ? (
+              {searchQuery || filterStatus !== 'all' || filterPriority !== 'all' || filterGroup !== 'all' ? (
                 <p className={styles.emptyHint}>Essayez d'autres filtres</p>
               ) : (
                 <p className={styles.emptyHint}>Créez votre premier client</p>
@@ -126,7 +184,6 @@ function CreateClientForm({ onSubmit, onCancel }) {
         <span className={styles.formTitle}>Nouvelle fiche client</span>
         <button type="button" className={styles.cancelBtn} onClick={onCancel}>×</button>
       </div>
-
       <div className={styles.formGrid}>
         <div className={styles.formField}>
           <label className={styles.formLabel}>Nom *</label>
@@ -165,7 +222,6 @@ function CreateClientForm({ onSubmit, onCancel }) {
           <textarea name="notes" className={styles.formTextarea} rows={3} placeholder="Informations utiles…" />
         </div>
       </div>
-
       <div className={styles.formActions}>
         <button type="button" className={styles.cancelBtnSm} onClick={onCancel}>Annuler</button>
         <button type="submit" className={styles.submitBtn}>Créer la fiche</button>

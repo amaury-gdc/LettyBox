@@ -69,6 +69,7 @@ The header uses a **dedicated dark palette** — "Lyrical Armor" black:
 
 - Cards are **white on warm gray background** — clear visual separation
 - Unread emails: `#fdf8f5` background + `#e8d5cc` border
+- Favorite client emails: `#f0e2d5` background (unread) / `#f5ece4` (read)
 - Selected/expanded: `#fdf8f5` background
 - AI summary blocks: `#fdf0f0` with left border `var(--accent)`
 - Box-shadow: `0 1px 2px rgba(28,26,23,0.08)` — subtle warm shadow
@@ -82,21 +83,21 @@ src/
 ├── App.module.css
 ├── global.css                # Reset + CSS variables + scrollbar + utils
 ├── store/
-│   ├── emailStore.js         # Zustand + persist: emails, digest, auth, loading
-│   └── clientStore.js        # Zustand: CRUD clients, filters, localStorage
+│   ├── emailStore.js         # Zustand + persist: emails, digest, auth, loading, linking
+│   └── clientStore.js        # Zustand: CRUD clients, groups, favorites, filters
 ├── data/
 │   ├── mockEmails.js         # 6 mock emails (2 urgent) + digest (unused in live mode)
 │   └── mockClients.js        # 5 mock clients with exchange history
 ├── services/
-│   ├── gmailService.js       # Gmail REST API — format=full, body extraction, base64 decode
+│   ├── gmailService.js       # Gmail REST API — format=full, body extraction, sender fetch
 │   └── claudeService.js      # Anthropic API claude-sonnet-4-6 (Phase 3)
 └── components/
     ├── Header/               # Brand + search bar + stats + auth/refresh buttons
     ├── EmailPanel/           # Inbox tab: digest + email list + error state
-    ├── EmailItem/            # Email card: row + expanded view + iframe body + ProcessModal
+    ├── EmailItem/            # Email card: row + expanded + iframe + client picker + ProcessModal
     ├── DigestBlock/          # Global AI digest block (accent red left border)
-    ├── ClientPanel/          # Clients tab: search + filters + list + create form
-    └── ClientCard/           # Expandable client profile (contacts, notes, history)
+    ├── ClientPanel/          # Clients tab: search + status/priority filters + group chips + list
+    └── ClientCard/           # Expandable client card: name edit, favorite, groups, Gmail history
 ```
 
 ### Layout
@@ -110,20 +111,35 @@ The app uses a **tab layout** (not two columns):
 
 Single-line Google-style row:
 ```
-● | sender (180px fixed) | subject (220px fixed) | snippet (flex) | time
+● | sender + group dots (180px fixed) | subject (220px fixed) | snippet (flex) | time
 ```
 - Indicator dot: red = urgent, accent red = unread, gray = read
-- Sender: client name if linked, email address otherwise (both fixed width)
+- Sender column: client name (if linked) + small colored dots per group — or raw sender name
 - All subjects align on the same column
-- Expandable on click — shows AI summary + iframe body + actions
+- Expandable on click — shows AI summary + iframe body + client link area + "✓ Mail traité"
 
 ### EmailItem expanded view
 
 When expanded:
 1. **AI summary block** (if `claudeSummary` is set) — red left border block
-2. **Email body** — rendered in a sandboxed `<iframe>` using `srcDoc` if `bodyHtml` is present; falls back to plain text
-3. **Action bar** — "Créer fiche client" button (if sender unknown) + "✓ Mail traité" button
-4. **ProcessModal** — triggered by "Mail traité", confirms 3 checklist items before removing the email
+2. **Email body** — rendered in a sandboxed `<iframe srcDoc>` if `bodyHtml` present; falls back to plain text
+3. **Client link area** — see Client Linking section below
+4. **"✓ Mail traité" button** — opens ProcessModal
+
+### Client Linking (EmailItem)
+
+Each email can be linked to a client in two ways:
+- **Auto** — matched by `email.from.email === client.email`
+- **Manual** — `linkedClientId` field set explicitly by the user
+
+Manual link takes priority over auto. Stored in emailStore (persisted).
+
+**UI states:**
+- No client linked → `[+ Créer fiche client] [Lier à un client ▾]`
+- Client linked → `[● ClientName] [Changer] [× (only if manual)]`
+- `Lier / Changer` opens an inline `ClientPicker` dropdown with search
+
+**Store actions:** `linkEmailToClient(emailId, clientId)`, `unlinkEmail(emailId)`
 
 ### ProcessModal (inside EmailItem)
 
@@ -134,6 +150,27 @@ A fixed overlay modal that appears when the user clicks "✓ Mail traité":
   3. Payments verified
 - "OK — Marquer comme traité" button — only enabled when all 3 are checked
 - On confirm: calls `removeEmail(id)` — email disappears from inbox permanently
+
+### ClientCard layout
+
+No avatar. Header row:
+```
+[★ favBtn] [name ✎] [group badges inline] | [status badge] [×]
+```
+- **Favorite star** (★/☆) — leftmost element in the nameRow, tight to the name, `1.3rem`, golden when active
+- **Name** — click the ✎ pencil icon to edit inline (Enter saves, Escape cancels)
+- **Group badges** — colored pills inline after the name on the same row
+- **No avatar** — removed in favor of a cleaner layout
+
+### ClientCard expanded body
+
+Sections (in order):
+1. Contact info (email + phone links)
+2. Meta chips (priority, exchange count, created date)
+3. **Groups section** — current group tags (click × to remove) + "add to group" dropdown
+4. **Notes section** — view / inline edit
+5. **Exchange history** — CRM exchanges (from analyzed emails)
+6. **Gmail emails section** — "Charger les emails" button → fetches all emails from sender via `fetchEmailsFromSender`, displayed as a lightweight list (date + subject + snippet)
 
 ## Data Models
 
@@ -151,6 +188,7 @@ A fixed overlay modal that appears when the user clicks "✓ Mail traité":
   isUrgent: boolean,         // detected by Claude
   claudeSummary: string,     // per-email summary (Claude)
   threadId: string,
+  linkedClientId: string | null,  // manual client link — takes priority over auto-match
 }
 ```
 
@@ -173,48 +211,63 @@ A fixed overlay modal that appears when the user clicks "✓ Mail traité":
   phone: string,
   status: 'actif' | 'prospect' | 'inactif',
   priority: 'low' | 'medium' | 'high',
+  isFavorite: boolean,       // favorite clients → darker email card background
+  groups: string[],          // array of group IDs
   notes: string,
-  exchanges: [              // auto-populated from analyzed emails
-    {
-      date: string,
-      subject: string,
-      summary: string,
-      emailId: string,
-    }
+  exchanges: [
+    { date: string, subject: string, summary: string, emailId: string }
   ],
   createdAt: string,
   updatedAt: string,
 }
 ```
 
+### Group
+```js
+{
+  id: string,
+  name: string,
+  color: { bg: string, text: string },  // from predefined ARIRANG-toned palette
+}
+```
+
+**Group color palette (7 colors, cycling):**
+indigo, forest, terracotta, purple, rose, teal, amber — all warm-toned to match design system.
+
+## Client Store — Features
+
+Stored at `lettybox_clients` in localStorage as `{ clients, groups }`.
+Handles old format (plain array) with graceful migration.
+
+**Client actions:** `createClient`, `updateClient`, `deleteClient`, `toggleFavorite`, `addExchange`
+
+**Group actions:** `createGroup(name)` — auto-assigns next color from palette, `deleteGroup(id)` — also removes from all clients, `toggleClientGroup(clientId, groupId)`
+
+**Filters:** `filterStatus`, `filterPriority`, `filterGroup` (`'all'` | `'favorites'` | groupId), `searchQuery`
+
+**`filterGroup = 'favorites'`** — shows only clients with `isFavorite: true`
+
 ## Gmail Service — Implementation Details
 
-`gmailService.js` uses the Gmail REST API with `format=full` to retrieve complete message payloads.
+`gmailService.js` uses the Gmail REST API.
+
+**`fetchUnreadEmails(accessToken)`** — `format=full`, fetches up to 20 unread messages.
+
+**`fetchEmailsFromSender(accessToken, senderEmail, maxResults=30)`** — lightweight metadata-only fetch (`format=metadata`) for all emails from a given sender. Used by ClientCard on demand, not persisted.
 
 **Key points:**
-- `metadataHeaders` must be repeated per header in the URL — comma-separated does NOT work (`?metadataHeaders=From&metadataHeaders=Subject`, not `?metadataHeaders=From,Subject`)
-- Body extraction (`extractBody`) handles both simple and multipart MIME messages:
-  - Simple: `payload.body.data` (base64url decoded)
-  - Multipart: recurse through `payload.parts`, prefer `text/plain`, fall back to `text/html`
-- Base64url decoding: replace `-` → `+` and `_` → `/` before `atob()`
-- Returns `{ bodyText, bodyHtml }` — HTML is kept raw for iframe rendering, not stripped
+- `metadataHeaders` must be repeated per header — `?metadataHeaders=From&metadataHeaders=Subject` not comma-separated
+- Body extraction (`extractBody`) handles simple and multipart MIME: prefers `text/plain`, falls back to `text/html` (kept raw for iframe)
+- Base64url decoding: replace `-`→`+` and `_`→`/` before `atob()`
 
 ## Email Persistence & Refresh Logic
 
-Emails are persisted to localStorage via Zustand `persist` middleware (key: `lettybox-emails`). Only `emails` and `digest` are persisted — `accessToken` and auth state are session-only.
+Emails persisted via Zustand `persist` (key: `lettybox-emails`). Only `emails` and `digest` persisted — `accessToken` is session-only.
 
-**On login / refresh:**
-- `loadEmails(accessToken)` fetches unread emails from Gmail
-- Compares fetched IDs against stored IDs — only adds emails not already present
-- New emails are prepended (most recent first)
-- Emails are **never lost** unless the user marks them as processed
-
-**On logout:**
-- Auth state is cleared, but emails are kept in localStorage
-
-**`removeEmail(id)`:**
-- Called after ProcessModal confirmation
-- Permanently removes the email from the store and localStorage
+**On login / refresh:** merge-only — new emails prepended, existing kept (by ID dedup)
+**On logout:** auth cleared, emails kept
+**`removeEmail(id)`:** permanent removal after ProcessModal confirmation
+**`linkEmailToClient` / `unlinkEmail`:** persisted in the same store
 
 ## Claude API Contract
 
@@ -243,9 +296,6 @@ Analyse ces emails non lus et retourne un JSON avec cette structure exacte :
     }
   ]
 }
-
-Emails à analyser :
-<JSON des emails>
 ```
 
 ### Model
@@ -259,28 +309,25 @@ Emails à analyser :
 - All components built with realistic mock data
 - Tab layout functional + responsive at 768px
 - Zustand stores initialized with full CRUD
-- Service stubs ready for Phase 2/3
 - **ARIRANG-inspired design system applied** ✅
 
-### Phase 2 — Gmail OAuth integration ✅
-- `@react-oauth/google` configured
-- Full OAuth flow (login/logout) — `useGoogleLogin` hooked to Header button
-- `gmailService.js`: fetch unread emails via Gmail REST API (`format=full`)
-- Full body extraction: plain text + HTML (rendered in sandboxed iframe)
-- Email persistence via Zustand `persist` (localStorage)
-- Merge-on-refresh: only new emails added, no duplicates, no data loss
-- "✓ Mail traité" flow: ProcessModal with 3-step checklist → `removeEmail`
+### Phase 2 — Gmail OAuth + CRM foundations ✅
+- Full OAuth flow (login/logout) via `@react-oauth/google`
+- Gmail REST API: `format=full` fetch, MIME body extraction, base64url decode
+- Email HTML rendered in sandboxed `<iframe srcDoc>`
+- Persistence: Zustand `persist`, merge-on-refresh, no data loss
+- "✓ Mail traité" → ProcessModal (3-step checklist) → `removeEmail`
+- **Client features:** favorites (★), groups (colored badges inline with name), inline name rename (✎), load all Gmail emails from a sender on demand
+- **Email–client linking:** manual `linkedClientId` overrides auto email-match; `ClientPicker` inline dropdown with search
+- Group colored dots shown in email sender column
 
 ### Phase 3 — Claude integration
 - `claudeService.js`: call `claude-sonnet-4-6` with batch prompt
-- Parse JSON returned by Claude
-- Update digest and per-email summaries
-- Detect isUrgent
+- Parse JSON, update digest + per-email summaries, detect isUrgent
 
 ### Phase 4 — Living CRM
-- Link emails → clients via sender email
-- Auto-suggest client profile for new senders
-- Auto-populate exchanges history
+- Auto-populate exchanges history from analyzed emails
+- Auto-suggest client profile for new unknown senders
 
 ### Phase 5 — Polish
 - Loading/error states with skeleton loaders
@@ -293,9 +340,11 @@ Emails à analyser :
 - **CSS Modules** everywhere — never global CSS except `global.css`
 - **Component = folder** — `ComponentName/ComponentName.jsx` + `ComponentName.module.css`
 - **Zustand** without boilerplate — actions and selectors in the same store
-- **No TypeScript** for now — pure JSX, fast, readable
+- **No TypeScript** — pure JSX, fast, readable
 - **No backend** — fully client-side, localStorage for persistence
 - **Explicit imports** — no barrel files, direct component import
 - **No inline styles** except dynamic values (e.g. computed colors passed as `style` prop)
 - **Email HTML rendering** — always use sandboxed `<iframe srcDoc>`, never `dangerouslySetInnerHTML`
-- **Modal pattern** — fixed overlay with `backdrop-filter: blur`, rendered via `<>` fragment sibling to the card
+- **Modal pattern** — fixed overlay with `backdrop-filter: blur`, rendered via `<>` fragment sibling to the triggering card
+- **Inline dropdowns** (pickers, group menus) — `position: absolute` within a `position: relative` wrapper, `z-index: 20`
+- **No avatar** — ClientCard uses name + pencil icon layout, no avatar circle

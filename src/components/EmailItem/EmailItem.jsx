@@ -6,9 +6,11 @@ import styles from './EmailItem.module.css'
 export default function EmailItem({ email }) {
   const [expanded, setExpanded] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [showPicker, setShowPicker] = useState(false)
   const iframeRef = useRef(null)
-  const { getClientByEmail } = useClientStore()
-  const removeEmail = useEmailStore((s) => s.removeEmail)
+
+  const { getClientByEmail, groups, clients } = useClientStore()
+  const { removeEmail, linkEmailToClient, unlinkEmail } = useEmailStore()
 
   function handleIframeLoad() {
     const iframe = iframeRef.current
@@ -17,13 +19,24 @@ export default function EmailItem({ email }) {
     iframe.style.height = height + 'px'
   }
 
-  const linkedClient = getClientByEmail(email.from.email)
-  const displayName = linkedClient ? linkedClient.name : email.from.email
+  // Resolve linked client: manual link takes priority over email-address match
+  const manualClient = email.linkedClientId
+    ? clients.find((c) => c.id === email.linkedClientId)
+    : null
+  const autoClient = getClientByEmail(email.from.email)
+  const linkedClient = manualClient ?? autoClient
+  const isManualLink = !!manualClient
+
+  const displayName = linkedClient ? linkedClient.name : (email.from.name || email.from.email)
+  const isFavorite = linkedClient?.isFavorite ?? false
+  const clientGroups = linkedClient
+    ? groups.filter((g) => linkedClient.groups?.includes(g.id))
+    : []
 
   return (
     <>
       <article
-        className={`${styles.item} ${!email.isRead ? styles.unread : ''} ${email.isUrgent ? styles.urgent : ''} ${expanded ? styles.expanded : ''}`}
+        className={`${styles.item} ${!email.isRead ? styles.unread : ''} ${email.isUrgent ? styles.urgent : ''} ${expanded ? styles.expanded : ''} ${isFavorite ? styles.favorite : ''}`}
         onClick={() => setExpanded((v) => !v)}
       >
         <div className={styles.row}>
@@ -31,7 +44,17 @@ export default function EmailItem({ email }) {
             className={styles.indicator}
             style={{ background: email.isUrgent ? 'var(--urgent)' : !email.isRead ? 'var(--accent)' : 'var(--surface-3)' }}
           />
-          <span className={styles.sender}>{displayName}</span>
+          <span className={styles.sender}>
+            <span className={styles.senderName}>{displayName}</span>
+            {clientGroups.map((g) => (
+              <span
+                key={g.id}
+                className={styles.senderGroupDot}
+                style={{ background: g.color.text }}
+                title={g.name}
+              />
+            ))}
+          </span>
           <span className={styles.subject}>{email.subject}</span>
           <span className={styles.snippet}>{email.snippet}</span>
           <time className={styles.time}>{formatDate(email.date)}</time>
@@ -63,28 +86,68 @@ export default function EmailItem({ email }) {
             )}
 
             <div className={styles.actions}>
-              {linkedClient ? (
-                <span className={styles.linkedClientTag}>
-                  Client lié : <strong>{linkedClient.name}</strong>
-                </span>
-              ) : (
-                <button
-                  className={styles.actionBtn}
-                  onClick={() => {
-                    useClientStore.getState().createClient({
-                      name: email.from.name,
-                      company: '',
-                      email: email.from.email,
-                      phone: '',
-                      status: 'prospect',
-                      priority: 'medium',
-                      notes: '',
-                    })
-                  }}
-                >
-                  + Créer fiche client
-                </button>
-              )}
+              <div className={styles.clientLinkArea}>
+                {linkedClient ? (
+                  <>
+                    <span className={styles.linkedClientTag}>
+                      <span className={styles.linkedDot} />
+                      <strong>{linkedClient.name}</strong>
+                    </span>
+                    <button
+                      className={styles.changeLinkBtn}
+                      onClick={() => setShowPicker((v) => !v)}
+                    >
+                      Changer
+                    </button>
+                    {isManualLink && (
+                      <button
+                        className={styles.unlinkBtn}
+                        onClick={() => unlinkEmail(email.id)}
+                        title="Délier ce client"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className={styles.actionBtn}
+                      onClick={() => {
+                        useClientStore.getState().createClient({
+                          name: email.from.name || email.from.email,
+                          company: '',
+                          email: email.from.email,
+                          phone: '',
+                          status: 'prospect',
+                          priority: 'medium',
+                          notes: '',
+                        })
+                      }}
+                    >
+                      + Créer fiche client
+                    </button>
+                    <button
+                      className={styles.actionBtn}
+                      onClick={() => setShowPicker((v) => !v)}
+                    >
+                      Lier à un client ▾
+                    </button>
+                  </>
+                )}
+
+                {showPicker && (
+                  <ClientPicker
+                    clients={clients}
+                    currentClientId={linkedClient?.id}
+                    onSelect={(clientId) => {
+                      linkEmailToClient(email.id, clientId)
+                      setShowPicker(false)
+                    }}
+                    onClose={() => setShowPicker(false)}
+                  />
+                )}
+              </div>
 
               <button
                 className={`${styles.actionBtn} ${styles.doneBtn}`}
@@ -107,10 +170,45 @@ export default function EmailItem({ email }) {
   )
 }
 
+function ClientPicker({ clients, currentClientId, onSelect, onClose }) {
+  const [search, setSearch] = useState('')
+  const filtered = clients.filter((c) =>
+    c.name.toLowerCase().includes(search.toLowerCase()) ||
+    c.email?.toLowerCase().includes(search.toLowerCase())
+  )
+
+  return (
+    <div className={styles.picker}>
+      <input
+        className={styles.pickerSearch}
+        placeholder="Rechercher un client…"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        autoFocus
+      />
+      <div className={styles.pickerList}>
+        {filtered.length === 0 ? (
+          <div className={styles.pickerEmpty}>Aucun client trouvé</div>
+        ) : (
+          filtered.map((c) => (
+            <button
+              key={c.id}
+              className={`${styles.pickerItem} ${c.id === currentClientId ? styles.pickerItemActive : ''}`}
+              onClick={() => onSelect(c.id)}
+            >
+              <span className={styles.pickerName}>{c.name}</span>
+              {c.email && <span className={styles.pickerEmail}>{c.email}</span>}
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
+
 function ProcessModal({ onConfirm, onCancel }) {
   const [checks, setChecks] = useState({ client: false, replied: false, payment: false })
   const allChecked = Object.values(checks).every(Boolean)
-
   const toggle = (key) => setChecks((c) => ({ ...c, [key]: !c[key] }))
 
   return (
@@ -118,44 +216,23 @@ function ProcessModal({ onConfirm, onCancel }) {
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h3 className={styles.modalTitle}>Traiter cet email</h3>
         <p className={styles.modalSubtitle}>Confirme avoir bien effectué les étapes suivantes :</p>
-
         <div className={styles.checklist}>
           <label className={styles.checkItem}>
-            <input
-              type="checkbox"
-              checked={checks.client}
-              onChange={() => toggle('client')}
-              className={styles.checkbox}
-            />
+            <input type="checkbox" checked={checks.client} onChange={() => toggle('client')} className={styles.checkbox} />
             <span>Informations client enregistrées</span>
           </label>
           <label className={styles.checkItem}>
-            <input
-              type="checkbox"
-              checked={checks.replied}
-              onChange={() => toggle('replied')}
-              className={styles.checkbox}
-            />
+            <input type="checkbox" checked={checks.replied} onChange={() => toggle('replied')} className={styles.checkbox} />
             <span>Réponse envoyée</span>
           </label>
           <label className={styles.checkItem}>
-            <input
-              type="checkbox"
-              checked={checks.payment}
-              onChange={() => toggle('payment')}
-              className={styles.checkbox}
-            />
+            <input type="checkbox" checked={checks.payment} onChange={() => toggle('payment')} className={styles.checkbox} />
             <span>Paiements vérifiés</span>
           </label>
         </div>
-
         <div className={styles.modalActions}>
           <button className={styles.cancelBtn} onClick={onCancel}>Annuler</button>
-          <button
-            className={styles.confirmBtn}
-            onClick={onConfirm}
-            disabled={!allChecked}
-          >
+          <button className={styles.confirmBtn} onClick={onConfirm} disabled={!allChecked}>
             OK — Marquer comme traité
           </button>
         </div>
@@ -192,7 +269,6 @@ function formatDate(isoDate) {
   const now = new Date()
   const diff = now - date
   const hours = Math.floor(diff / 3600000)
-
   if (hours < 1) return `${Math.floor(diff / 60000)} min`
   if (hours < 24) return `${hours}h`
   if (hours < 48) return 'hier'

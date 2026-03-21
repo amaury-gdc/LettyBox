@@ -13,6 +13,16 @@
   border-color: #e8d5cc;
 }
 
+.item.favorite {
+  background: #f5ece4;
+  border-color: #dfc9bb;
+}
+
+.item.favorite.unread {
+  background: #f0e2d5;
+  border-color: #d4b09a;
+}
+
 .item:hover {
   box-shadow: 0 2px 6px rgba(60, 64, 67, 0.2);
   z-index: 1;
@@ -48,18 +58,35 @@
 .sender {
   width: 180px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  padding-right: 16px;
+}
+
+.senderName {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: 16px;
+  flex: 1;
+  min-width: 0;
 }
 
-.item:not(.unread) .sender {
+.item:not(.unread) .senderName {
   font-weight: 400;
   color: var(--text-muted);
+}
+
+.senderGroupDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
 }
 
 /* ===== Objet — largeur fixe, alignement garanti ===== */
@@ -183,7 +210,18 @@
   color: var(--accent);
 }
 
+.clientLinkArea {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
 .linkedClientTag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.8rem;
   color: var(--text-muted);
 }
@@ -191,6 +229,125 @@
 .linkedClientTag strong {
   color: var(--accent);
   font-weight: 500;
+}
+
+.linkedDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.changeLinkBtn {
+  font-size: 0.72rem;
+  font-family: var(--font-ui);
+  padding: 2px 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.changeLinkBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.unlinkBtn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0 3px;
+  line-height: 1;
+  transition: color var(--transition);
+}
+
+.unlinkBtn:hover {
+  color: var(--urgent);
+}
+
+/* ===== Client picker dropdown ===== */
+.picker {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 24px rgba(28, 26, 23, 0.14);
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pickerSearch {
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+}
+
+.pickerSearch:focus {
+  outline: none;
+  background: var(--surface);
+}
+
+.pickerSearch::placeholder {
+  color: var(--text-faint);
+}
+
+.pickerList {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.pickerItem {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.pickerItem:hover {
+  background: var(--surface-2);
+}
+
+.pickerItem.pickerItemActive {
+  background: var(--accent-dim);
+}
+
+.pickerName {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.pickerEmail {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+
+.pickerEmpty {
+  padding: 16px 12px;
+  font-size: 0.8rem;
+  color: var(--text-faint);
+  text-align: center;
 }
 
 .doneBtn {

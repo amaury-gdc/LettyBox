@@ -47,6 +47,18 @@ export const useEmailStore = create(
         emails: state.emails.filter((e) => e.id !== emailId),
       })),
 
+      linkEmailToClient: (emailId, clientId) => set((state) => ({
+        emails: state.emails.map((e) =>
+          e.id === emailId ? { ...e, linkedClientId: clientId } : e
+        ),
+      })),
+
+      unlinkEmail: (emailId) => set((state) => ({
+        emails: state.emails.map((e) =>
+          e.id === emailId ? { ...e, linkedClientId: null } : e
+        ),
+      })),
+
       setDigest: (digest) => set({ digest }),
 
       updateEmailSummary: (emailId, summary, isUrgent) => set((state) => ({

@@ -19,6 +19,15 @@
   border-color: #e8d5cc;
 }
 
+.card.favorite {
+  background: #f5ece4;
+  border-color: #dfc9bb;
+}
+
+.card.favorite.selected {
+  background: #f0e4da;
+}
+
 /* Priority indicator */
 .card::before {
   content: '';
@@ -44,7 +53,34 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 4px;
+}
+
+/* Favorite star — far left, close to name */
+.favBtn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0 2px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: color var(--transition), opacity var(--transition);
+}
+
+.card:hover .favBtn,
+.favBtn.favActive {
+  opacity: 1;
+}
+
+.favBtn.favActive {
+  color: #c8892a;
+}
+
+.favBtn:hover {
+  color: #c8892a;
 }
 
 .identity {
@@ -93,6 +129,19 @@
   min-width: 0;
 }
 
+/* Name row: star + name + edit icon + group badges, all inline */
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.nameRow .favBtn {
+  margin-right: -3px; /* colle l'étoile au nom */
+}
+
 .name {
   font-size: 0.875rem;
   font-weight: 500;
@@ -100,7 +149,31 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
 }
+
+.editNameBtn {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  opacity: 0;
+  flex-shrink: 0;
+  transition: color var(--transition), opacity var(--transition);
+}
+
+.card:hover .editNameBtn {
+  opacity: 1;
+}
+
+.editNameBtn:hover {
+  color: var(--accent);
+}
+
 
 .company {
   font-size: 0.78rem;
@@ -139,6 +212,7 @@
   color: var(--accent);
 }
 
+
 .deleteBtn {
   background: none;
   border: none;
@@ -161,13 +235,148 @@
   background: var(--urgent-dim);
 }
 
+/* ===== Name inline edit ===== */
+.nameInput {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text);
+  font-family: var(--font-ui);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 1px 6px;
+  width: 100%;
+  max-width: 180px;
+}
+
+.nameInput:focus {
+  outline: none;
+}
+
+/* ===== Group badge — inline in nameRow ===== */
+.groupBadge {
+  font-size: 0.63rem;
+  font-weight: 500;
+  padding: 1px 7px;
+  border-radius: 10px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ===== Groups section (expanded body) ===== */
+.groupActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.groupTag {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+
+.groupTag:hover {
+  opacity: 0.7;
+}
+
+.addGroupBtn {
+  font-size: 0.72rem;
+  font-family: var(--font-ui);
+  padding: 2px 9px;
+  background: var(--surface-2);
+  border: 1px dashed var(--border-hover);
+  border-radius: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.addGroupBtn:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.groupDropdownWrapper {
+  position: relative;
+}
+
+.groupDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 10;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(28,26,23,0.12);
+  min-width: 140px;
+  overflow: hidden;
+}
+
+.groupDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition);
+}
+
+.groupDropdownItem:hover {
+  background: var(--surface-2);
+}
+
+.groupDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ===== Load emails button ===== */
+.loadEmailsBtn {
+  font-size: 0.75rem;
+  font-family: var(--font-ui);
+  padding: 3px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+
+.loadEmailsBtn:hover:not(:disabled) {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.loadEmailsBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* ===== Body (expanded) ===== */
 .body {
   margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding-left: 46px;
 }
 
 /* ===== Contacts ===== */

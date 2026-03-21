@@ -106,6 +106,46 @@ function decodeBase64(data) {
 }
 
 
+/**
+ * Fetches all emails (read + unread) from a specific sender.
+ * Used by the CRM to load a client's full email history on demand.
+ */
+export async function fetchEmailsFromSender(accessToken, senderEmail, maxResults = 30) {
+  const query = encodeURIComponent(`from:${senderEmail}`)
+  const listRes = await fetch(
+    `${GMAIL_API}/users/me/messages?q=${query}&maxResults=${maxResults}`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  )
+  if (!listRes.ok) throw new Error(`Gmail list error: ${listRes.status}`)
+  const listData = await listRes.json()
+  const messages = listData.messages ?? []
+
+  const emails = await Promise.all(
+    messages.map((m) => fetchMessageMeta(m.id, accessToken))
+  )
+  return emails.filter(Boolean)
+}
+
+// Lightweight fetch — metadata only, no body (for client history display)
+async function fetchMessageMeta(messageId, accessToken) {
+  const res = await fetch(
+    `${GMAIL_API}/users/me/messages/${messageId}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  )
+  if (!res.ok) return null
+  const data = await res.json()
+  const headers_ = data.payload?.headers ?? []
+  const getHeader = (name) =>
+    headers_.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value ?? ''
+
+  return {
+    id: data.id,
+    subject: getHeader('Subject') || '(sans objet)',
+    snippet: data.snippet ?? '',
+    date: new Date(parseInt(data.internalDate)).toISOString(),
+  }
+}
+
 function parseFrom(raw) {
   // "Name <email>" or just "email"
   const match = raw.match(/^(.*?)\s*<(.+?)>$/)

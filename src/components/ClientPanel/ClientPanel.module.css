@@ -191,6 +191,148 @@
   color: var(--text);
 }
 
+.searchRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.filterSelects {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ===== Group filter chips ===== */
+.groupFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+
+.groupChip {
+  padding: 3px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+  white-space: nowrap;
+}
+
+.groupChip:hover {
+  background: var(--surface-2);
+}
+
+.groupChipActive {
+  background: var(--surface-2) !important;
+  border-color: currentColor !important;
+  font-weight: 500;
+}
+
+.groupChipFav {
+  border-color: rgba(200, 137, 42, 0.4);
+  color: #c8892a;
+}
+
+.groupChipFav:hover,
+.groupChipFav.groupChipActive {
+  background: rgba(200, 137, 42, 0.08) !important;
+}
+
+.groupChipWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.deleteGroupBtn {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0 3px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity var(--transition), color var(--transition);
+}
+
+.groupChipWrapper:hover .deleteGroupBtn {
+  opacity: 1;
+}
+
+.deleteGroupBtn:hover {
+  color: var(--urgent);
+}
+
+.addGroupChip {
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px dashed var(--border-hover);
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+
+.addGroupChip:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.groupInputForm {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.groupInput {
+  padding: 3px 10px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  width: 130px;
+}
+
+.groupInput:focus {
+  outline: none;
+}
+
+.groupInputConfirm,
+.groupInputCancel {
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.groupInputConfirm {
+  color: var(--accent);
+}
+
+.groupInputConfirm:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.groupInputCancel {
+  color: var(--text-muted);
+}
+
 .filters {
   display: flex;
   gap: 8px;
