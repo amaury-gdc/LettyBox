@@ -1,0 +1,236 @@
+.item {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--transition);
+  position: relative;
+}
+
+.item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: transparent;
+  transition: background var(--transition);
+}
+
+.item:hover {
+  background: var(--surface);
+}
+
+.item.urgent::before {
+  background: var(--urgent);
+}
+
+.item.expanded {
+  background: var(--surface);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* ===== Meta row ===== */
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sender {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.avatarUrgent {
+  background: var(--urgent-dim);
+  border-color: var(--urgent);
+  color: var(--urgent);
+}
+
+.senderInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.senderName {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.senderEmail {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.urgentBadge {
+  padding: 2px 7px;
+  background: var(--urgent-dim);
+  border: 1px solid var(--urgent);
+  border-radius: 99px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--urgent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.clientBadge {
+  font-size: 0.6rem;
+  color: var(--accent);
+  title: 'Client lié';
+}
+
+.time {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+/* ===== Subject ===== */
+.subject {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 39px; /* align with sender name */
+}
+
+/* ===== Snippet ===== */
+.snippet {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding-left: 39px;
+}
+
+/* ===== Expanded details ===== */
+.details {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 39px;
+}
+
+.aiSummary {
+  padding: 10px 12px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(200, 240, 100, 0.2);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aiLabel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.aiIcon {
+  font-size: 0.55rem;
+}
+
+.aiText {
+  font-size: 0.8rem;
+  color: var(--text);
+  line-height: 1.55;
+}
+
+/* Override snippet clamp in details */
+.details .snippet {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+  padding-left: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.actionBtn {
+  padding: 5px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.actionBtn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.linkedClientTag {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.linkedClientTag strong {
+  color: var(--accent);
+  font-weight: 500;
+}

@@ -1,0 +1,109 @@
+/* ===== CSS Variables — Design System ===== */
+:root {
+  --bg: #0e0e11;
+  --surface: #16161a;
+  --surface-2: #1e1e24;
+  --surface-3: #252530;
+  --border: #2a2a35;
+  --border-hover: #3a3a48;
+  --accent: #c8f064;
+  --accent-dim: rgba(200, 240, 100, 0.12);
+  --accent-hover: #d4f57a;
+  --text: #e8e8f0;
+  --text-muted: #8888a0;
+  --text-faint: #55556a;
+  --urgent: #ff6b6b;
+  --urgent-dim: rgba(255, 107, 107, 0.12);
+  --success: #6bf0a8;
+  --warning: #f0c96b;
+
+  --font-display: 'DM Serif Display', serif;
+  --font-ui: 'Syne', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+
+  --transition: 150ms ease;
+  --transition-slow: 300ms ease;
+}
+
+/* ===== Reset ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Typography helpers ===== */
+.font-display { font-family: var(--font-display); }
+.font-mono { font-family: var(--font-mono); }
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* ===== Focus ===== */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ===== Selection ===== */
+::selection {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+/* ===== Utilities ===== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

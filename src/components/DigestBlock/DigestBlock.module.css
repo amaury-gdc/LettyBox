@@ -1,0 +1,81 @@
+.block {
+  margin: 16px;
+  padding: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.icon {
+  font-size: 0.6rem;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.title {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.time {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-faint);
+}
+
+.summary {
+  font-size: 0.875rem;
+  color: var(--text);
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.urgentBanner {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  background: var(--urgent-dim);
+  border: 1px solid var(--urgent);
+  border-radius: var(--radius);
+}
+
+.urgentDot {
+  width: 6px;
+  height: 6px;
+  background: var(--urgent);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.urgentText {
+  font-size: 0.78rem;
+  color: var(--urgent);
+  font-weight: 500;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

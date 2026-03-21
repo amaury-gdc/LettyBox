@@ -1,0 +1,146 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 24px;
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.logo {
+  font-size: 18px;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+/* ===== Stats ===== */
+.stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.statBadge {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 3px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.statBadge.urgent {
+  background: var(--urgent-dim);
+  border-color: var(--urgent);
+  color: var(--urgent);
+}
+
+.statValue {
+  font-weight: 500;
+  color: inherit;
+}
+
+.statLabel {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.statBadge.urgent .statLabel {
+  color: var(--urgent);
+  opacity: 0.8;
+}
+
+.digestTime {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+
+/* ===== Actions ===== */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.refreshBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.refreshBtn:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--border-hover);
+}
+
+.refreshBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.authBtn {
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.authBtn:hover {
+  color: var(--text);
+  border-color: var(--border-hover);
+}
+
+.authBtnPrimary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0e0e11;
+  font-weight: 600;
+}
+
+.authBtnPrimary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: #0e0e11;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

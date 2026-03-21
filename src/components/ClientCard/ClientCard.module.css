@@ -1,0 +1,412 @@
+.card {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--transition);
+  position: relative;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: transparent;
+  transition: background var(--transition);
+}
+
+.card.priority_high::before {
+  background: var(--accent);
+}
+
+.card.priority_medium::before {
+  background: var(--warning);
+}
+
+.card:hover {
+  background: var(--surface);
+}
+
+.card.selected {
+  background: var(--surface);
+}
+
+/* ===== Header ===== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.avatarWrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.avatar.status_actif {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.avatar.status_prospect {
+  border-color: var(--warning);
+  color: var(--warning);
+  background: rgba(240, 201, 107, 0.1);
+}
+
+.priorityDot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 2px solid var(--bg);
+}
+
+.dot_high { background: var(--accent); }
+.dot_medium { background: var(--warning); }
+.dot_low { background: var(--text-faint); }
+
+.names {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.company {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== Badges ===== */
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.statusBadge {
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.statusBadge.status_actif {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.statusBadge.status_prospect {
+  background: rgba(240, 201, 107, 0.1);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px 4px;
+  opacity: 0;
+  transition: color var(--transition), opacity var(--transition);
+}
+
+.card:hover .deleteBtn {
+  opacity: 1;
+}
+
+.deleteBtn:hover {
+  color: var(--urgent);
+}
+
+/* ===== Body (expanded) ===== */
+.body {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-left: 44px; /* align with name */
+}
+
+/* ===== Contacts ===== */
+.contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.contactRow:hover .contactValue {
+  color: var(--accent);
+}
+
+.contactIcon {
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.contactValue {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  transition: color var(--transition);
+}
+
+/* ===== Meta row ===== */
+.metaRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.metaChip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.metaLabel {
+  font-size: 0.6rem;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metaValue {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ===== Sections ===== */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionLabel {
+  font-size: 0.68rem;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+
+.exchangeCount {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.editBtn {
+  background: none;
+  border: none;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.editBtn:hover {
+  color: var(--accent);
+}
+
+/* ===== Notes ===== */
+.notes {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.noNotes {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.notesEdit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notesTextarea {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.notesTextarea:focus {
+  outline: none;
+}
+
+.notesActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.cancelNoteBtn {
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.saveNoteBtn {
+  padding: 4px 12px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  color: #0e0e11;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ===== Exchanges ===== */
+.exchanges {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.exchange {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: background var(--transition);
+}
+
+.exchange:last-child {
+  border-bottom: none;
+}
+
+.exchange:hover {
+  background: var(--surface-2);
+}
+
+.exchangeMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exchangeDate {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-faint);
+}
+
+.emailLink {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.exchangeSubject {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.exchangeSummary {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
