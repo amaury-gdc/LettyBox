@@ -82,18 +82,18 @@ src/
 ├── App.module.css
 ├── global.css                # Reset + CSS variables + scrollbar + utils
 ├── store/
-│   ├── emailStore.js         # Zustand: emails, digest, auth, loading
+│   ├── emailStore.js         # Zustand + persist: emails, digest, auth, loading
 │   └── clientStore.js        # Zustand: CRUD clients, filters, localStorage
 ├── data/
-│   ├── mockEmails.js         # 6 mock emails (2 urgent) + digest
+│   ├── mockEmails.js         # 6 mock emails (2 urgent) + digest (unused in live mode)
 │   └── mockClients.js        # 5 mock clients with exchange history
 ├── services/
-│   ├── gmailService.js       # Gmail REST API calls (Phase 2)
+│   ├── gmailService.js       # Gmail REST API — format=full, body extraction, base64 decode
 │   └── claudeService.js      # Anthropic API claude-sonnet-4-6 (Phase 3)
 └── components/
     ├── Header/               # Brand + search bar + stats + auth/refresh buttons
-    ├── EmailPanel/           # Inbox tab: digest + email list
-    ├── EmailItem/            # Single-line email card (indicator · sender · subject · snippet · time)
+    ├── EmailPanel/           # Inbox tab: digest + email list + error state
+    ├── EmailItem/            # Email card: row + expanded view + iframe body + ProcessModal
     ├── DigestBlock/          # Global AI digest block (accent red left border)
     ├── ClientPanel/          # Clients tab: search + filters + list + create form
     └── ClientCard/           # Expandable client profile (contacts, notes, history)
@@ -115,7 +115,25 @@ Single-line Google-style row:
 - Indicator dot: red = urgent, accent red = unread, gray = read
 - Sender: client name if linked, email address otherwise (both fixed width)
 - All subjects align on the same column
-- Expandable on click — shows AI summary + actions
+- Expandable on click — shows AI summary + iframe body + actions
+
+### EmailItem expanded view
+
+When expanded:
+1. **AI summary block** (if `claudeSummary` is set) — red left border block
+2. **Email body** — rendered in a sandboxed `<iframe>` using `srcDoc` if `bodyHtml` is present; falls back to plain text
+3. **Action bar** — "Créer fiche client" button (if sender unknown) + "✓ Mail traité" button
+4. **ProcessModal** — triggered by "Mail traité", confirms 3 checklist items before removing the email
+
+### ProcessModal (inside EmailItem)
+
+A fixed overlay modal that appears when the user clicks "✓ Mail traité":
+- 3 checkboxes the user must all tick:
+  1. Client information saved
+  2. Reply sent
+  3. Payments verified
+- "OK — Marquer comme traité" button — only enabled when all 3 are checked
+- On confirm: calls `removeEmail(id)` — email disappears from inbox permanently
 
 ## Data Models
 
@@ -125,7 +143,9 @@ Single-line Google-style row:
   id: string,
   from: { name: string, email: string },
   subject: string,
-  snippet: string,           // text preview
+  snippet: string,           // short text preview (from Gmail API)
+  body: string,              // plain text body (decoded from base64)
+  bodyHtml: string | null,   // raw HTML body — rendered in sandboxed iframe
   date: string,              // ISO 8601
   isRead: boolean,
   isUrgent: boolean,         // detected by Claude
@@ -166,6 +186,35 @@ Single-line Google-style row:
   updatedAt: string,
 }
 ```
+
+## Gmail Service — Implementation Details
+
+`gmailService.js` uses the Gmail REST API with `format=full` to retrieve complete message payloads.
+
+**Key points:**
+- `metadataHeaders` must be repeated per header in the URL — comma-separated does NOT work (`?metadataHeaders=From&metadataHeaders=Subject`, not `?metadataHeaders=From,Subject`)
+- Body extraction (`extractBody`) handles both simple and multipart MIME messages:
+  - Simple: `payload.body.data` (base64url decoded)
+  - Multipart: recurse through `payload.parts`, prefer `text/plain`, fall back to `text/html`
+- Base64url decoding: replace `-` → `+` and `_` → `/` before `atob()`
+- Returns `{ bodyText, bodyHtml }` — HTML is kept raw for iframe rendering, not stripped
+
+## Email Persistence & Refresh Logic
+
+Emails are persisted to localStorage via Zustand `persist` middleware (key: `lettybox-emails`). Only `emails` and `digest` are persisted — `accessToken` and auth state are session-only.
+
+**On login / refresh:**
+- `loadEmails(accessToken)` fetches unread emails from Gmail
+- Compares fetched IDs against stored IDs — only adds emails not already present
+- New emails are prepended (most recent first)
+- Emails are **never lost** unless the user marks them as processed
+
+**On logout:**
+- Auth state is cleared, but emails are kept in localStorage
+
+**`removeEmail(id)`:**
+- Called after ProcessModal confirmation
+- Permanently removes the email from the store and localStorage
 
 ## Claude API Contract
 
@@ -213,11 +262,14 @@ Emails à analyser :
 - Service stubs ready for Phase 2/3
 - **ARIRANG-inspired design system applied** ✅
 
-### Phase 2 — Gmail OAuth integration
+### Phase 2 — Gmail OAuth integration ✅
 - `@react-oauth/google` configured
 - Full OAuth flow (login/logout) — `useGoogleLogin` hooked to Header button
-- `gmailService.js`: fetch unread emails via Gmail REST API
-- Hydrate emailStore from Gmail
+- `gmailService.js`: fetch unread emails via Gmail REST API (`format=full`)
+- Full body extraction: plain text + HTML (rendered in sandboxed iframe)
+- Email persistence via Zustand `persist` (localStorage)
+- Merge-on-refresh: only new emails added, no duplicates, no data loss
+- "✓ Mail traité" flow: ProcessModal with 3-step checklist → `removeEmail`
 
 ### Phase 3 — Claude integration
 - `claudeService.js`: call `claude-sonnet-4-6` with batch prompt
@@ -229,7 +281,6 @@ Emails à analyser :
 - Link emails → clients via sender email
 - Auto-suggest client profile for new senders
 - Auto-populate exchanges history
-- localStorage persistence via Zustand persist middleware
 
 ### Phase 5 — Polish
 - Loading/error states with skeleton loaders
@@ -246,3 +297,5 @@ Emails à analyser :
 - **No backend** — fully client-side, localStorage for persistence
 - **Explicit imports** — no barrel files, direct component import
 - **No inline styles** except dynamic values (e.g. computed colors passed as `style` prop)
+- **Email HTML rendering** — always use sandboxed `<iframe srcDoc>`, never `dangerouslySetInnerHTML`
+- **Modal pattern** — fixed overlay with `backdrop-filter: blur`, rendered via `<>` fragment sibling to the card

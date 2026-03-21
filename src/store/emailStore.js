@@ -1,40 +1,65 @@
 import { create } from 'zustand'
-import { mockEmails, mockDigest } from '../data/mockEmails'
+import { persist } from 'zustand/middleware'
+import { fetchUnreadEmails } from '../services/gmailService'
 
-export const useEmailStore = create((set, get) => ({
-  // State
-  emails: mockEmails,
-  digest: mockDigest,
-  isLoading: false,
-  isAuthenticated: false,
-  accessToken: null,
-  error: null,
+export const useEmailStore = create(
+  persist(
+    (set, get) => ({
+      // State
+      emails: [],
+      digest: null,
+      isLoading: false,
+      isAuthenticated: false,
+      accessToken: null,
+      error: null,
 
-  // Actions
-  setLoading: (isLoading) => set({ isLoading }),
-  setError: (error) => set({ error }),
+      // Actions
+      setLoading: (isLoading) => set({ isLoading }),
+      setError: (error) => set({ error }),
 
-  setAuthenticated: (token) => set({
-    isAuthenticated: true,
-    accessToken: token,
-  }),
+      setAuthenticated: (token) => set({
+        isAuthenticated: true,
+        accessToken: token,
+      }),
 
-  logout: () => set({
-    isAuthenticated: false,
-    accessToken: null,
-    emails: [],
-    digest: null,
-  }),
+      logout: () => set({
+        isAuthenticated: false,
+        accessToken: null,
+        error: null,
+        // emails kept intentionally — persistent across sessions
+      }),
 
-  setEmails: (emails) => set({ emails }),
+      loadEmails: async (accessToken) => {
+        set({ isLoading: true, error: null })
+        try {
+          const fetched = await fetchUnreadEmails(accessToken)
+          const existing = get().emails
+          const existingIds = new Set(existing.map((e) => e.id))
+          const newEmails = fetched.filter((e) => !existingIds.has(e.id))
+          // New emails go to the top
+          set({ emails: [...newEmails, ...existing], isLoading: false })
+        } catch (err) {
+          set({ error: err.message, isLoading: false })
+        }
+      },
 
-  setDigest: (digest) => set({ digest }),
+      removeEmail: (emailId) => set((state) => ({
+        emails: state.emails.filter((e) => e.id !== emailId),
+      })),
 
-  updateEmailSummary: (emailId, summary, isUrgent) => set((state) => ({
-    emails: state.emails.map((e) =>
-      e.id === emailId ? { ...e, claudeSummary: summary, isUrgent } : e
-    ),
-  })),
+      setDigest: (digest) => set({ digest }),
 
-  getUrgentEmails: () => get().emails.filter((e) => e.isUrgent),
-}))
+      updateEmailSummary: (emailId, summary, isUrgent) => set((state) => ({
+        emails: state.emails.map((e) =>
+          e.id === emailId ? { ...e, claudeSummary: summary, isUrgent } : e
+        ),
+      })),
+
+      getUrgentEmails: () => get().emails.filter((e) => e.isUrgent),
+    }),
+    {
+      name: 'lettybox-emails',
+      partialize: (state) => ({ emails: state.emails, digest: state.digest }),
+    }
+  )
+)

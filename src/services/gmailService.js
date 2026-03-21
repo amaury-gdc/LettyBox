@@ -36,7 +36,7 @@ export async function fetchUnreadEmails(accessToken) {
 async function fetchMessage(messageId, accessToken) {
   const headers = { Authorization: `Bearer ${accessToken}` }
   const res = await fetch(
-    `${GMAIL_API}/users/me/messages/${messageId}?format=metadata&metadataHeaders=From,Subject,Date`,
+    `${GMAIL_API}/users/me/messages/${messageId}?format=full`,
     { headers }
   )
   if (!res.ok) return null
@@ -48,6 +48,7 @@ async function fetchMessage(messageId, accessToken) {
 
   const fromRaw = getHeader('From')
   const fromParsed = parseFrom(fromRaw)
+  const { bodyText, bodyHtml } = extractBody(data.payload)
 
   return {
     id: data.id,
@@ -55,12 +56,55 @@ async function fetchMessage(messageId, accessToken) {
     from: fromParsed,
     subject: getHeader('Subject') || '(sans objet)',
     snippet: data.snippet ?? '',
+    body: bodyText,
+    bodyHtml,
     date: new Date(parseInt(data.internalDate)).toISOString(),
     isRead: false,
     isUrgent: false,
     claudeSummary: '',
   }
 }
+
+function extractBody(payload) {
+  if (!payload) return { bodyText: '', bodyHtml: null }
+
+  // Simple non-multipart message
+  if (payload.body?.data) {
+    const decoded = decodeBase64(payload.body.data)
+    if (payload.mimeType === 'text/html') return { bodyText: '', bodyHtml: decoded }
+    return { bodyText: decoded, bodyHtml: null }
+  }
+
+  // Multipart: prefer HTML for rendering, keep plain as fallback
+  if (payload.parts) {
+    const htmlPart = findPart(payload.parts, 'text/html')
+    const plainPart = findPart(payload.parts, 'text/plain')
+    return {
+      bodyText: plainPart ? decodeBase64(plainPart.body.data) : '',
+      bodyHtml: htmlPart ? decodeBase64(htmlPart.body.data) : null,
+    }
+  }
+
+  return { bodyText: '', bodyHtml: null }
+}
+
+function findPart(parts, mimeType) {
+  for (const part of parts) {
+    if (part.mimeType === mimeType && part.body?.data) return part
+    if (part.parts) {
+      const found = findPart(part.parts, mimeType)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+function decodeBase64(data) {
+  return decodeURIComponent(
+    escape(atob(data.replace(/-/g, '+').replace(/_/g, '/')))
+  )
+}
+
 
 function parseFrom(raw) {
   // "Name <email>" or just "email"

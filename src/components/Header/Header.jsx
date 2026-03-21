@@ -9,7 +9,11 @@ export default function Header() {
 
   const login = useGoogleLogin({
     scope: 'https://www.googleapis.com/auth/gmail.readonly',
-    onSuccess: (response) => useEmailStore.getState().setAuthenticated(response.access_token),
+    onSuccess: (response) => {
+      const store = useEmailStore.getState()
+      store.setAuthenticated(response.access_token)
+      store.loadEmails(response.access_token)
+    },
     onError: (err) => console.error('OAuth error:', err),
   })
 
@@ -57,7 +61,11 @@ export default function Header() {
       <div className={styles.actions}>
         <button
           className={styles.refreshBtn}
-          disabled={isLoading}
+          disabled={isLoading || !isAuthenticated}
+          onClick={() => {
+            const store = useEmailStore.getState()
+            if (store.accessToken) store.loadEmails(store.accessToken)
+          }}
           title="Actualiser les emails"
         >
           <RefreshIcon spinning={isLoading} />

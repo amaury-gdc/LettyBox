@@ -4,7 +4,7 @@ import EmailItem from '../EmailItem/EmailItem.jsx'
 import styles from './EmailPanel.module.css'
 
 export default function EmailPanel() {
-  const { emails, digest, isLoading } = useEmailStore()
+  const { emails, digest, isLoading, error } = useEmailStore()
 
   return (
     <section className={styles.panel}>
@@ -15,6 +15,11 @@ export default function EmailPanel() {
           {isLoading ? (
             <div className={styles.emptyState}>
               <p className={styles.emptyText}>Chargement des emails…</p>
+            </div>
+          ) : error ? (
+            <div className={styles.emptyState}>
+              <p className={styles.emptyText}>Erreur lors du chargement</p>
+              <p className={styles.emptyHint}>{error}</p>
             </div>
           ) : emails.length === 0 ? (
             <div className={styles.emptyState}>
