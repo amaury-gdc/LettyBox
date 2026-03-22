@@ -26,11 +26,14 @@ export async function fetchUnreadEmails(accessToken) {
   const messages = listData.messages ?? []
 
   // 2. Fetch each message in parallel
-  const emails = await Promise.all(
+  const results = await Promise.all(
     messages.map((m) => fetchMessage(m.id, accessToken))
   )
 
-  return emails.filter(Boolean)
+  const emails = results.filter(Boolean)
+  const failedCount = results.length - emails.length
+
+  return { emails, failedCount }
 }
 
 async function fetchMessage(messageId, accessToken) {

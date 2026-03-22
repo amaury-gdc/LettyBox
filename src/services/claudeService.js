@@ -70,6 +70,33 @@ ${JSON.stringify(emails.map((e) => ({
   }
 
   const data = await response.json()
-  const text = data.content[0]?.text ?? '{}'
-  return JSON.parse(text)
+  const raw = data.content[0]?.text ?? ''
+
+  // Strip markdown fences if Claude wraps the JSON
+  const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
+
+  if (!cleaned) {
+    throw new Error('Claude returned an empty response')
+  }
+
+  let parsed
+  try {
+    parsed = JSON.parse(cleaned)
+  } catch {
+    throw new Error('Claude returned invalid JSON')
+  }
+
+  // Validate expected structure
+  return {
+    globalSummary: typeof parsed.globalSummary === 'string' ? parsed.globalSummary : 'Analyse terminée.',
+    urgentCount: typeof parsed.urgentCount === 'number' ? parsed.urgentCount : 0,
+    emails: Array.isArray(parsed.emails)
+      ? parsed.emails.map((e) => ({
+          id: e.id ?? '',
+          summary: e.summary ?? '',
+          isUrgent: !!e.isUrgent,
+          suggestedClient: e.suggestedClient ?? null,
+        }))
+      : [],
+  }
 }

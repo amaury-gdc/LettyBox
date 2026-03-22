@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Header from './components/Header/Header.jsx'
 import EmailPanel from './components/EmailPanel/EmailPanel.jsx'
 import ClientPanel from './components/ClientPanel/ClientPanel.jsx'
+import Toast from './components/Toast/Toast.jsx'
 import styles from './App.module.css'
 
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
         {activeTab === 'inbox' && <EmailPanel />}
         {activeTab === 'clients' && <ClientPanel />}
       </main>
+      <Toast />
     </div>
   )
 }

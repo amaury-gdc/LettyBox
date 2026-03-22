@@ -79,25 +79,27 @@ The header uses a **dedicated dark palette** — "Lyrical Armor" black:
 ```
 src/
 ├── main.jsx                  # Entry point, GoogleOAuthProvider
-├── App.jsx                   # Tab layout (Inbox / Clients)
+├── App.jsx                   # Tab layout (Inbox / Clients) + Toast
 ├── App.module.css
 ├── global.css                # Reset + CSS variables + scrollbar + utils
 ├── store/
-│   ├── emailStore.js         # Zustand + persist: emails, digest, auth, loading, linking
-│   └── clientStore.js        # Zustand: CRUD clients, groups, favorites, filters
+│   ├── emailStore.js         # Zustand + persist: emails, digest, auth, loading, linking, search, analysis
+│   ├── clientStore.js        # Zustand: CRUD clients, groups, favorites, filters
+│   └── toastStore.js         # Zustand: global toast notifications
 ├── data/
 │   ├── mockEmails.js         # 6 mock emails (2 urgent) + digest (unused in live mode)
 │   └── mockClients.js        # 5 mock clients with exchange history
 ├── services/
-│   ├── gmailService.js       # Gmail REST API — format=full, body extraction, sender fetch
-│   └── claudeService.js      # Anthropic API claude-sonnet-4-6 (Phase 3)
+│   ├── gmailService.js       # Gmail REST API — format=full, body extraction, sender fetch, error count
+│   └── claudeService.js      # Anthropic API claude-sonnet-4-6 — batch analysis with robust parsing
 └── components/
-    ├── Header/               # Brand + search bar + stats + auth/refresh buttons
-    ├── EmailPanel/           # Inbox tab: digest + email list + error state
+    ├── Header/               # Brand + search bar (filters emails) + stats + auth/refresh buttons
+    ├── EmailPanel/           # Inbox tab: analyzing banner + warning banner + digest + email list
     ├── EmailItem/            # Email card: row + expanded + iframe + client picker + ProcessModal
     ├── DigestBlock/          # Global AI digest block (accent red left border)
     ├── ClientPanel/          # Clients tab: search + status/priority filters + group chips + list
-    └── ClientCard/           # Expandable client card: name edit, favorite, groups, Gmail history
+    ├── ClientCard/           # Expandable client card: name edit, favorite, groups, Gmail history
+    └── Toast/                # Global toast notification (slide-up, auto-dismiss)
 ```
 
 ### Layout
@@ -321,9 +323,20 @@ Analyse ces emails non lus et retourne un JSON avec cette structure exacte :
 - **Email–client linking:** manual `linkedClientId` overrides auto email-match; `ClientPicker` inline dropdown with search
 - Group colored dots shown in email sender column
 
-### Phase 3 — Claude integration
-- `claudeService.js`: call `claude-sonnet-4-6` with batch prompt
-- Parse JSON, update digest + per-email summaries, detect isUrgent
+### Phase 3 — Claude integration ✅
+- `claudeService.js`: call `claude-sonnet-4-6` with batch prompt ✅
+- `emailStore.js`: `runAnalysis()` calls `analyzeEmails()` after Gmail fetch, updates digest + per-email summaries + urgency ✅
+- `EmailPanel`: "Claude analyse vos emails…" banner shown during analysis ✅
+- Parse JSON, update digest + per-email summaries, detect isUrgent ✅
+- Robust JSON parsing: strip markdown fences, validate structure, safe fallbacks ✅
+- Error surfaced to user via `error` state ("Analyse IA échouée : …") ✅
+
+### MVP Hardening ✅
+- Google Client ID fallback removed from `main.jsx` — env var required, `.env` file created ✅
+- Header search bar functional — filters emails by sender, subject, snippet via `emailStore.searchQuery` ✅
+- Gmail fetch errors surfaced: `warning` state shows count of failed emails in a yellow banner ✅
+- Toast notification system: `toastStore` + `Toast` component, shown on link/unlink/create client ✅
+- Removed unused `@anthropic-ai/sdk` dependency (34 packages removed) ✅
 
 ### Phase 4 — Living CRM
 - Auto-populate exchanges history from analyzed emails
@@ -334,6 +347,12 @@ Analyse ces emails non lus et retourne un JSON avec cette structure exacte :
 - Animations (fade-in cards)
 - Responsive (breakpoint 768px → single column)
 - Keyboard shortcuts (R = refresh, N = new client)
+
+### Future — Supabase migration (planned)
+- Migrate from localStorage to Supabase (Firestore alternative)
+- Supabase Auth (replace `@react-oauth/google`)
+- Edge Functions as proxy for Anthropic API (secure API key)
+- PostgreSQL tables: clients, emails, groups
 
 ## Conventions
 

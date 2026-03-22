@@ -3,7 +3,7 @@ import { useEmailStore } from '../../store/emailStore.js'
 import styles from './Header.module.css'
 
 export default function Header() {
-  const { isAuthenticated, emails, digest, isLoading } = useEmailStore()
+  const { isAuthenticated, emails, digest, isLoading, searchQuery, setSearchQuery } = useEmailStore()
   const urgentCount = emails.filter((e) => e.isUrgent).length
   const unreadCount = emails.filter((e) => !e.isRead).length
 
@@ -33,8 +33,13 @@ export default function Header() {
           <input
             type="text"
             className={styles.searchInput}
-            placeholder="Rechercher dans les emails"
+            placeholder="Rechercher dans les emails…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
+          {searchQuery && (
+            <button className={styles.clearSearch} onClick={() => setSearchQuery('')}>×</button>
+          )}
         </div>
       </div>
 

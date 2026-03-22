@@ -10,7 +10,9 @@
       "WebFetch(domain:shop.bts-official.us)",
       "WebFetch(domain:www.gmanetwork.com)",
       "WebFetch(domain:ibighit.com)",
-      "WebFetch(domain:backyarddrunkard.com)"
+      "WebFetch(domain:backyarddrunkard.com)",
+      "Bash(npx vite:*)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

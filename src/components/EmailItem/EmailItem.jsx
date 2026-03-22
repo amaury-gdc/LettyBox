@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { useClientStore } from '../../store/clientStore.js'
 import { useEmailStore } from '../../store/emailStore.js'
+import { useToastStore } from '../../store/toastStore.js'
 import styles from './EmailItem.module.css'
 
 export default function EmailItem({ email }) {
@@ -11,6 +12,7 @@ export default function EmailItem({ email }) {
 
   const { getClientByEmail, groups, clients } = useClientStore()
   const { removeEmail, linkEmailToClient, unlinkEmail } = useEmailStore()
+  const toast = useToastStore((s) => s.show)
 
   function handleIframeLoad() {
     const iframe = iframeRef.current
@@ -102,7 +104,7 @@ export default function EmailItem({ email }) {
                     {isManualLink && (
                       <button
                         className={styles.unlinkBtn}
-                        onClick={() => unlinkEmail(email.id)}
+                        onClick={() => { unlinkEmail(email.id); toast('Client délié') }}
                         title="Délier ce client"
                       >
                         ×
@@ -123,6 +125,7 @@ export default function EmailItem({ email }) {
                           priority: 'medium',
                           notes: '',
                         })
+                        toast('Fiche client créée')
                       }}
                     >
                       + Créer fiche client
@@ -143,6 +146,8 @@ export default function EmailItem({ email }) {
                     onSelect={(clientId) => {
                       linkEmailToClient(email.id, clientId)
                       setShowPicker(false)
+                      const c = clients.find((cl) => cl.id === clientId)
+                      toast(c ? `Lié à ${c.name}` : 'Client lié')
                     }}
                     onClose={() => setShowPicker(false)}
                   />
