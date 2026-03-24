@@ -106,6 +106,9 @@ export default function ClientCard({ client, isSelected, onSelect }) {
               ))}
             </div>
             {client.company && <span className={styles.company}>{client.company}</span>}
+            {client.exchangeSummary && (
+              <p className={styles.exchangeSummaryText}>{client.exchangeSummary}</p>
+            )}
           </div>
         </div>
 

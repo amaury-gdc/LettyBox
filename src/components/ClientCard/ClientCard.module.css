@@ -183,6 +183,18 @@
   text-overflow: ellipsis;
 }
 
+.exchangeSummaryText {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 4px;
+  padding: 6px 10px;
+  background: #fdf0f0;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-style: italic;
+}
+
 /* ===== Badges ===== */
 .badges {
   display: flex;

@@ -106,6 +106,34 @@
   user-select: none;
 }
 
+.generateBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  color: var(--accent);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), box-shadow var(--transition);
+  white-space: nowrap;
+}
+
+.generateBtn:hover:not(:disabled) {
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: var(--shadow);
+}
+
+.generateBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .newBtn {
   display: flex;
   align-items: center;

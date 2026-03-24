@@ -100,3 +100,82 @@ ${JSON.stringify(emails.map((e) => ({
       : [],
   }
 }
+
+/**
+ * Generates client profiles from grouped emails (by sender).
+ * @param {Array<{senderEmail: string, senderName: string, emails: Array}>} emailGroups
+ * @returns {Promise<{clients: Array<{email: string, name: string, company: string, exchangeSummary: string}>}>}
+ */
+export async function generateClientsFromEmails(emailGroups) {
+  const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY
+  if (!apiKey) throw new Error('VITE_ANTHROPIC_API_KEY not set')
+
+  const userPrompt = `Analyse ces emails groupés par expéditeur et génère une fiche client pour chacun.
+Retourne un JSON avec cette structure exacte :
+{
+  "clients": [
+    {
+      "email": "<email de l'expéditeur>",
+      "name": "<nom complet de l'expéditeur>",
+      "company": "<entreprise si détectable, sinon chaine vide>",
+      "exchangeSummary": "<résumé en 2-3 phrases des derniers échanges avec cet expéditeur>"
+    }
+  ]
+}
+
+Expéditeurs et leurs emails :
+${JSON.stringify(emailGroups.map((g) => ({
+  senderEmail: g.senderEmail,
+  senderName: g.senderName,
+  emails: g.emails.map((e) => ({
+    subject: e.subject,
+    snippet: e.snippet,
+    date: e.date,
+  })),
+})), null, 2)}`
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 4096,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  })
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}))
+    throw new Error(err.error?.message ?? `API error ${response.status}`)
+  }
+
+  const data = await response.json()
+  const raw = data.content[0]?.text ?? ''
+  const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
+
+  if (!cleaned) throw new Error('Claude returned an empty response')
+
+  let parsed
+  try {
+    parsed = JSON.parse(cleaned)
+  } catch {
+    throw new Error('Claude returned invalid JSON')
+  }
+
+  return {
+    clients: Array.isArray(parsed.clients)
+      ? parsed.clients.map((c) => ({
+          email: c.email ?? '',
+          name: c.name ?? '',
+          company: c.company ?? '',
+          exchangeSummary: c.exchangeSummary ?? '',
+        }))
+      : [],
+  }
+}

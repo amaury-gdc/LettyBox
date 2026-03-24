@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { useClientStore } from '../../store/clientStore.js'
+import { useEmailStore } from '../../store/emailStore.js'
+import { useToastStore } from '../../store/toastStore.js'
+import { generateClientsFromEmails } from '../../services/claudeService.js'
 import ClientCard from '../ClientCard/ClientCard.jsx'
 import styles from './ClientPanel.module.css'
 
@@ -20,15 +23,81 @@ const PRIORITY_OPTIONS = [
 export default function ClientPanel() {
   const {
     filterStatus, filterPriority, filterGroup, searchQuery,
-    selectedClientId, groups,
+    selectedClientId, groups, clients: allClients,
     setFilterStatus, setFilterPriority, setFilterGroup, setSearchQuery,
     setSelectedClient, getFilteredClients, createClient, createGroup, deleteGroup,
+    toggleClientGroup, getClientByEmail,
   } = useClientStore()
+
+  const emails = useEmailStore((s) => s.emails)
+  const showToast = useToastStore((s) => s.show)
 
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [newGroupName, setNewGroupName] = useState('')
   const [showGroupInput, setShowGroupInput] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
   const clients = getFilteredClients()
+
+  async function handleGenerateClients() {
+    // Find emails without associated client
+    const orphanEmails = emails.filter((e) => {
+      if (e.linkedClientId) return false
+      if (getClientByEmail(e.from?.email)) return false
+      return true
+    })
+
+    if (orphanEmails.length === 0) {
+      showToast('Tous les emails ont déjà un client associé')
+      return
+    }
+
+    // Group by sender email
+    const grouped = {}
+    for (const email of orphanEmails) {
+      const key = email.from?.email
+      if (!key) continue
+      if (!grouped[key]) {
+        grouped[key] = { senderEmail: key, senderName: email.from.name || key, emails: [] }
+      }
+      grouped[key].emails.push(email)
+    }
+    const emailGroups = Object.values(grouped)
+
+    setIsGenerating(true)
+    try {
+      const result = await generateClientsFromEmails(emailGroups)
+
+      // Ensure "À valider" group exists
+      let validationGroup = groups.find((g) => g.name === 'À valider')
+      if (!validationGroup) {
+        validationGroup = createGroup('À valider')
+      }
+
+      let created = 0
+      for (const c of result.clients) {
+        // Skip if a client with this email already exists
+        if (getClientByEmail(c.email)) continue
+
+        const newClient = createClient({
+          name: c.name,
+          company: c.company,
+          email: c.email,
+          status: 'prospect',
+          priority: 'medium',
+          exchangeSummary: c.exchangeSummary,
+          notes: '',
+        })
+        toggleClientGroup(newClient.id, validationGroup.id)
+        created++
+      }
+
+      showToast(`${created} fiche${created > 1 ? 's' : ''} client générée${created > 1 ? 's' : ''}`)
+    } catch (err) {
+      showToast(`Erreur : ${err.message}`)
+    } finally {
+      setIsGenerating(false)
+    }
+  }
 
   function handleCreateClient(e) {
     e.preventDefault()
@@ -79,6 +148,15 @@ export default function ClientPanel() {
             <select className={styles.filterSelect} value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
               {PRIORITY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
+            <button
+              className={styles.generateBtn}
+              onClick={handleGenerateClients}
+              disabled={isGenerating}
+              title="Générer des fiches client à partir des emails sans client associé"
+            >
+              <SparkleIcon />
+              <span>{isGenerating ? 'Génération…' : 'Générer depuis mails'}</span>
+            </button>
             <button className={styles.newBtn} onClick={() => setShowCreateForm(true)}>
               <PlusIcon />
               <span>Nouveau</span>
@@ -244,6 +322,14 @@ function SearchIcon() {
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  )
+}
+
+function SparkleIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
     </svg>
   )
 }
